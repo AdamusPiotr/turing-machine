@@ -1,1 +1,31 @@
 /* You can add global styles to this file, and also import other style files */
+.row {
+  display: flex;
+}
+
+.content-centered {
+  justify-content: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+input.ng-dirty.ng-invalid{
+    border: 1px solid red;
+    outline-color: red;
+}
+
+
+//tape
+.tape-cell {
+  width: 35px;
+  height: 35px;
+  border: 1px solid dimgray;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+}
