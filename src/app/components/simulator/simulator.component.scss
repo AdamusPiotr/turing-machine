@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  margin: 0 10%;
+  min-width: 90vw;
+  height: 100vh;
+  padding: 0 15px;
+}
+
+.table {
+  border-collapse: collapse;
+  border-spacing: 0;
+
+  tr, td, th {
+    border: 1px solid pink;
+  }
+
+  &__header {
+    text-align: center;
+  }
+
+  &__cell {
+    height: 35px;
+    min-width: 130px;
+    align-content: center;
+    text-align: center;
+
+    input {
+      width: 25px
+    }
+
+    &--active{
+      background-color: green;
+    }
+  }
+}
+
+.input--short {
+  max-width: 200px;
+}
+
+.form-control {
+  display: inline-flex;
+  padding: 0 0;
+  &--centered {
+    padding-left: 7px;
+  }
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #f00;
+}
+
+
+//.mat-input-invalid

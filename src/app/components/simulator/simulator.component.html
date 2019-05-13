@@ -1,0 +1,66 @@
+<app-header></app-header>
+<form [formGroup]="inputDataForm" class="row mb-2">
+  <div class="input-short">
+    <label for="allowed-symbols">Allowed symbols</label>
+    <input id="allowed-symbols" formControlName="allowedSymbols" class="form-control data-input" placeholder="Allowed symbols"/>
+  </div>
+  <div class="input-short ml-5">
+    <label for="allowed-symbols">Number of states</label>
+    <input id="number-of-states" type="number" formControlName="numberOfStates" class="form-control data-input"
+           placeholder="Number of states"/>
+  </div>
+</form>
+
+<div class="row" *ngIf="inputDataForm.valid else invalidInputData">
+  <table class="table">
+    <tr>
+      <th>/</th>
+      <th *ngFor="let _ of countOfStates; let i = index" class="table__header">q{{i}}</th>
+    </tr>
+    <tr *ngFor="let characterForm of tableOfStates | keyvalue; let i = index">
+      <th class="table__header">
+        {{ characterForm.key }}
+      </th>
+      <td *ngFor="let stateForm of characterForm.value; let stateIndex = index"
+          [ngClass]="{'table__cell--active': stateForm.current}">
+        <div>
+          {{stateForm | json}}
+        </div>
+        <input type="text" [value]="this.tableOfStates[characterForm.key][stateIndex].nextState"
+               (input)="handleNextStateChange($event, characterForm.key, stateIndex)" class="form-control text-input">
+        /
+        <input type="text" [value]="this.tableOfStates[characterForm.key][stateIndex].symbol"
+               (input)="handleSymbolChange($event, characterForm.key, stateIndex)" class="form-control text-input">
+        /
+        <input type="text" [value]="this.tableOfStates[characterForm.key][stateIndex].direction"
+               (input)="handleDirectionChange($event, characterForm.key, stateIndex)" class="form-control text-input">
+
+      </td>
+    </tr>
+  </table>
+</div>
+
+<ng-template #invalidInputData>
+  <h2>Invalid input data</h2>
+</ng-template>
+
+
+<form class="row" [formGroup]="tapeStringForm">
+  <div class="input-short">
+    <label for="symbols-on-tape">Symbols on tape</label>
+    <input id="symbols-on-tape" formControlName="tapeString" class="form-control data-input" placeholder="Symbols on tape"/>
+  </div>
+</form>
+
+<div class="arrow-down" [style]="tapeStringForm">
+</div>
+<div class="row">
+  <div class="tape-cell" *ngFor="let symbol of tapeValue | split">
+    {{symbol}}
+  </div>
+  <button class="btn btn-success" (click)="nextStep()">Next step</button>
+</div>
+<div>
+  {{currentTapeIndex}}
+</div>
+
