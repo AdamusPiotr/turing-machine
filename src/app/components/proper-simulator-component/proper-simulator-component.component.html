@@ -1,0 +1,67 @@
+<app-header></app-header>
+
+<form [formGroup]="turingMachinePropertiesForm" class="row mb-2">
+  <div class="input-short">
+    <label for="allowed-symbols">Allowed symbols</label>
+    <input id="allowed-symbols" formControlName="allowedSymbols" class="form-control data-input" placeholder="Allowed symbols"/>
+  </div>
+  <div class="input-short ml-5">
+    <label for="allowed-symbols">Number of states</label>
+    <input id="number-of-states" type="number" formControlName="numberOfStates" class="form-control data-input"
+           placeholder="Number of states"/>
+  </div>
+</form>
+
+
+<div class="row" *ngIf="turingMachinePropertiesForm.valid && tableOfStatesForm">
+  <table class="table" [formGroup]="tableOfStatesForm">
+    <tr>
+      <th>/</th>
+      <th *ngFor="let stateNumber of numberOfStatesArray$ | async;" class="table__header">q{{stateNumber}}</th>
+    </tr>
+    <tr *ngFor="let characterForm of tableOfStatesForm.controls | keyvalue" [formGroup]="characterForm.value">
+      <th class="table__header">
+        {{ characterForm.key }}
+      </th>
+      <td *ngFor="let stateForm of characterForm.value.controls" [formGroup]="stateForm"
+          class="table__cell"
+          [ngClass]="{'table__cell--active': stateForm.value.current}">
+        <input type="text" formControlName="nextState" class="form-control text-input">
+        /
+        <input type="text" formControlName="symbol" class="form-control text-input">
+        /
+        <input type="text" formControlName="direction" class="form-control text-input">
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="row mt-1" [formGroup]="tapeForm">
+  <input class="form-control input--short" formControlName="tape"/>
+</div>
+
+<div class="row tape">
+
+  <div class="reversed-tape">
+    <div class="tape-cell" *ngFor="let leftSymbol of leftAddedSymbols">
+      {{leftSymbol}}
+    </div>
+  </div>
+
+  <div class="original-tape-container">
+    <div *ngFor="let symbol of tapeValue" class=" tape-cell">
+      {{symbol}}
+    </div>
+    <div class="pointer" [ngStyle]="{transform: 'translate(' + (tapeIndex * 35) +'px)'}">
+    </div>
+  </div>
+
+
+  <div class="tape-cell" *ngFor="let rightSymbol of rightAddedSymbols">
+    {{rightSymbol}}
+  </div>
+</div>
+<button class="btn btn-info" (click)="goToNextState()" [disabled]="isEnd">
+  Next
+</button>
+

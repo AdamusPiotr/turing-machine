@@ -12,20 +12,10 @@
   flex-direction: column;
 }
 
-input.ng-dirty.ng-invalid{
-    border: 1px solid red;
-    outline-color: red;
+input.ng-dirty.ng-invalid {
+  border: 1px solid red;
+  outline-color: red;
 }
 
 
 //tape
-.tape-cell {
-  width: 35px;
-  height: 35px;
-  border: 1px solid dimgray;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 20px;
-  font-weight: bold;
-}
