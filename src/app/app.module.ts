@@ -10,6 +10,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { CurrentFormValuePipe } from './pipes/current-form-value.pipe';
 import { SplitPipe } from './pipes/split.pipe';
 import { ProperSimulatorComponentComponent } from './components/proper-simulator-component/proper-simulator-component.component';
+import { InputResizeDirective } from './input-resize.directive';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { ProperSimulatorComponentComponent } from './components/proper-simulator
     CurrentFormValuePipe,
     SplitPipe,
     ProperSimulatorComponentComponent,
+    InputResizeDirective,
   ],
   imports: [
     BrowserModule,

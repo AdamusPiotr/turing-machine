@@ -13,7 +13,7 @@
 </form>
 
 
-<div class="row" *ngIf="turingMachinePropertiesForm.valid && tableOfStatesForm">
+<div class="row" *ngIf="turingMachinePropertiesForm.valid && tableOfStatesForm; else badProperties">
   <table class="table" [formGroup]="tableOfStatesForm">
     <tr>
       <th>/</th>
@@ -26,22 +26,31 @@
       <td *ngFor="let stateForm of characterForm.value.controls" [formGroup]="stateForm"
           class="table__cell"
           [ngClass]="{'table__cell--active': stateForm.value.current}">
-        <input type="text" formControlName="nextState" class="form-control text-input">
+        <input type="text" formControlName="nextState" class="form-control text-input" appInputResize>
         /
-        <input type="text" formControlName="symbol" class="form-control text-input">
+        <input type="text" formControlName="symbol" class="form-control text-input form-control--centered" appInputResize>
         /
-        <input type="text" formControlName="direction" class="form-control text-input">
+        <input type="text" formControlName="direction" class="form-control text-input form-control--centered" appInputResize>
       </td>
     </tr>
   </table>
 </div>
 
+<ng-template #badProperties>
+  <div class="my-lg-5">
+    <h2>Table of states should contain at least 2 allowed symbols (excluding empty symbol #) and 2 states</h2>
+
+  </div>
+</ng-template>
+
 <div class="row mt-1" [formGroup]="tapeForm">
-  <input class="form-control input--short" formControlName="tape"/>
+  <div>
+    <label for="tapeSymbols">Starting tape value</label>
+    <input id="tapeSymbols" class="form-control input--short" formControlName="tape"/>
+  </div>
 </div>
 
-<div class="row tape">
-
+<div class="row tape mt-2">
   <div class="reversed-tape">
     <div class="tape-cell" *ngFor="let leftSymbol of leftAddedSymbols">
       {{leftSymbol}}
@@ -57,11 +66,19 @@
   </div>
 
 
-  <div class="tape-cell" *ngFor="let rightSymbol of rightAddedSymbols">
-    {{rightSymbol}}
+  <div class="right-tape-container">
+    <div class="tape-cell" *ngFor="let rightSymbol of rightAddedSymbols">
+      {{rightSymbol}}
+    </div>
   </div>
+
 </div>
-<button class="btn btn-info" (click)="goToNextState()" [disabled]="isEnd">
-  Next
-</button>
+
+<div class="row">
+  <button class="btn btn-info" (click)="goToNextState()"
+          [disabled]="isEnd || tableOfStatesForm.invalid || tapeForm.invalid || turingMachinePropertiesForm.invalid">
+    Next
+  </button>
+</div>
+
 

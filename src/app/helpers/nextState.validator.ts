@@ -6,7 +6,8 @@ export function nextStateValidator(highestState: number): ValidatorFn {
 
     const isLastState = controlValue.toUpperCase() === 'SK';
     const nextStateNumber = +controlValue.slice(1);
-    const isNextStateLowerThanMaxState = !isNaN(nextStateNumber) && nextStateNumber < highestState;
+
+    const isNextStateLowerThanMaxState = controlValue.slice(1) !== '' && !isNaN(nextStateNumber) && nextStateNumber < highestState;
 
     const isValidNextState = controlValue.charAt(0) === 'q' && isNextStateLowerThanMaxState;
 

@@ -6,6 +6,10 @@
   padding: 0 15px;
 }
 
+.row{
+  flex-wrap: nowrap;
+}
+
 .table {
   width: auto;
   border-collapse: collapse;
@@ -20,6 +24,7 @@
   }
 
   &__cell {
+    white-space: nowrap;
     height: 35px;
     min-width: 130px;
     align-content: center;
@@ -45,7 +50,7 @@
 
 .form-control {
   display: inline-flex;
-  padding: 0 0;
+  padding: 3px;
   &--centered {
     padding-left: 7px;
   }
@@ -60,18 +65,20 @@
 }
 
 .tape {
-  overflow: auto;
+  overflow: visible;
   margin-bottom: 10px;
 }
 
 .original-tape-container {
   display: flex;
+  overflow: visible;
   position: relative;
   padding-bottom: 10px;
   transition: all;
 }
 
 .tape-cell {
+  white-space: nowrap;
   width: 35px;
   height: 35px;
   border: 1px solid dimgray;
@@ -97,6 +104,10 @@
 .reversed-tape {
   display: flex;
   flex-direction: row-reverse;
+}
+
+.right-tape-container {
+  display: flex;
 }
 
 

@@ -38,18 +38,45 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
     this.tapeForm = this.generateTapeForm();
     this.allowedSymbolsArray$ = this.getAllowedSymbolsArrayObservable();
     this.numberOfStatesArray$ = this.getNumberOfStatesArrayObservable();
+    this.getTuringMachinePropertiesValueChangesSubscription();
+    this.getTapeFormValueChanges();
+    this.getTableOfStatesValueChanges();
+    this.tableOfStatesForm.patchValue({
+      '#': [{ direction: 'P', nextState: 'q1', symbol: 'a' }, { nextState: 'SK' }],
+      a: [{ direction: 'P', nextState: 'q0', symbol: 'd' }, { nextState: 'SK' }],
+      d: [{ direction: 'P', nextState: 'q0', symbol: 'a' }, { nextState: 'SK' }]
+    });
 
-    this.turingMachinePropertiesFormValueChanges = this.turingMachinePropertiesForm.valueChanges.pipe(startWith({
-      allowedSymbols: 'ad',
-      numberOfStates: 2
-    }), filter(({ numberOfStates }) => numberOfStates < 1000))
-      .subscribe((values) => {
-        this.generateTableOfStatesForm(values);
-      });
+  }
+
+  ngOnDestroy(): void {
+    this.turingMachinePropertiesFormValueChanges.unsubscribe();
+  }
+
+  getTableOfStatesValueChanges() {
+    this.tableOfStatesForm.valueChanges.subscribe((val) => {
+
+      if (!this.currentState || this.tableOfStatesForm.invalid) {
+        return;
+      }
+
+      const { row, column } = this.currentState;
+
+      this.currentState = {
+        ...val[row][column],
+        current: true,
+        row,
+        column
+      };
+
+    });
+  }
 
 
-    this.tapeForm.valueChanges.subscribe(({ tape }: { tape: string }) => {
+  getTapeFormValueChanges(): Subscription {
+    return this.tapeForm.valueChanges.subscribe(({ tape }) => {
       this.tableOfStatesForm.patchValue(clearCurrentState(this.tableOfStatesForm.value));
+      this.tapeIndex = 0;
 
       if (this.tapeForm.valid) {
         this.tapeValue = tape.split('');
@@ -78,17 +105,16 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
         this.tableOfStatesForm.patchValue(markedTableOfStatesCopy);
       }
     });
-
-    this.tableOfStatesForm.patchValue({
-      '#': [{ direction: 'P', nextState: 'q1', symbol: 'a' }, { nextState: 'SK' }],
-      a: [{ direction: 'P', nextState: 'q1', symbol: 'd' }, { nextState: 'SK' }],
-      d: [{ direction: 'P', nextState: 'q1', symbol: 'a' }, { nextState: 'SK' }]
-    });
-
   }
 
-  ngOnDestroy(): void {
-    this.turingMachinePropertiesFormValueChanges.unsubscribe();
+  getTuringMachinePropertiesValueChangesSubscription(): Subscription {
+    return this.turingMachinePropertiesFormValueChanges = this.turingMachinePropertiesForm.valueChanges.pipe(startWith({
+      allowedSymbols: 'ad',
+      numberOfStates: 2
+    }), filter(({ numberOfStates }) => numberOfStates < 1000))
+      .subscribe((values) => {
+        this.generateTableOfStatesForm(values);
+      });
   }
 
   getAllowedSymbolsArrayObservable() {
@@ -117,7 +143,7 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
     const generateStateSubFormsArray = () => range(numberOfStates).map(() => this.fb.group({
       nextState: ['SK', [nextStateValidator(numberOfStates)]],
       symbol: ['', [stateSymbolValidator(allowedSymbols + '#')]],
-      direction: ['', Validators.pattern('')],
+      direction: ['', Validators.pattern('[LP]{1}')],
       current: false
     }));
 
@@ -136,23 +162,27 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
   }
 
   goToNextState() {
-    const { symbol, nextState, direction } = this.currentState;
+    const { symbol, nextState, direction, row, column } = this.currentState;
+    this.tableOfStatesForm.patchValue(clearCurrentState(this.tableOfStatesForm.value));
+
+    console.log(clearCurrentState(this.tableOfStatesForm.value));
+
 
     if (nextState.toUpperCase() === 'SK') {
       !this.isEnd && window.alert('KONIEC');
+      const newStateWithCurrent = this.tableOfStatesForm.value;
+      newStateWithCurrent[row][column] = this.currentState;
+      this.tableOfStatesForm.patchValue(newStateWithCurrent);
 
       this.isEnd = true;
       return;
     }
 
-    this.tableOfStatesForm.patchValue(clearCurrentState(this.tableOfStatesForm.value));
 
     this.changeProperSymbol(this.tapeIndex, symbol);
     direction.toUpperCase() === 'L' ? this.tapeIndex-- : this.tapeIndex++;
 
     const nextStateSymbol = this.selectProperSymbol(this.tapeIndex);
-
-
 
     this.currentState = {
       ...this.tableOfStatesForm.value[nextStateSymbol][nextState.slice(1)],
@@ -165,6 +195,7 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
     nextStateValue[nextStateSymbol][nextState.slice(1)] = this.currentState;
     this.tableOfStatesForm.patchValue(nextStateValue);
 
+    this.generateAdditionalSymbols(this.tapeIndex);
   }
 
 
@@ -174,11 +205,9 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
       return this.tapeValue[tapeIndex];
     }
     if (tapeIndex < 0) {
-      return this.leftAddedSymbols[tapeIndex];
+      return this.leftAddedSymbols[Math.abs(tapeIndex) - 1];
     }
     if (tapeIndex >= this.tapeValue.length) {
-      console.log('here man');
-      console.log(this.tapeValue.length, tapeIndex);
       return this.rightAddedSymbols[tapeIndex - this.tapeValue.length];
     }
   }
@@ -188,21 +217,34 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
       this.tapeValue[tapeIndex] = symbol;
     }
     if (tapeIndex < 0) {
-      this.leftAddedSymbols[tapeIndex] = symbol;
+      this.leftAddedSymbols[Math.abs(tapeIndex) - 1] = symbol;
     }
     if (tapeIndex >= this.tapeValue.length) {
       this.rightAddedSymbols[tapeIndex - this.tapeValue.length] = symbol;
     }
   }
+
+  generateAdditionalSymbols(tapIndex): void {
+    if (tapIndex < 0 && this.leftAddedSymbols.length + tapIndex < 3) {
+      this.leftAddedSymbols.push('#');
+    }
+
+    if (tapIndex > 0 && this.tapeValue.length + this.rightAddedSymbols.length - tapIndex < 3) {
+      this.rightAddedSymbols.push('#');
+    }
+  }
 }
 
 function clearCurrentState(state: Record<string, any[]>) {
+  console.log(state);
+  console.log(Object.entries(state));
   return Object.entries(state).reduce((acc, [key, value]) => ({
-    ...acc, [key]: value.map((formGroup) => ({
+    ...acc,
+    [key]: value.map((formGroup) => ({
       ...formGroup,
       current: false
     }))
-  }));
+  }), {});
 }
 
 
