@@ -5,8 +5,6 @@ export const oneStateValidator: ValidatorFn = (control: FormGroup): ValidationEr
   const symbol = control.get('symbol').value;
   const direction = control.get('direction').value;
 
-  console.log(nextState, symbol, direction);
-
   if (nextState === 'SK') {
     return (symbol === '' && direction === '') ? null : { tableValidator: true };
   }

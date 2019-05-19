@@ -6,7 +6,7 @@ export const tableOfStates = {
     {
       nextState: 'q2',
       symbol: '#',
-      direction: 'P'
+      direction: 'L'
     },
     {
       nextState: 'SK',

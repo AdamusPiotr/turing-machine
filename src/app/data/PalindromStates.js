@@ -58,13 +58,13 @@ export const tableOfStates = {
     },
     {
       nextState: 'q4',
-      direction: 'a',
-      symbol: 'P',
+      direction: 'P',
+      symbol: 'a',
     },
     {
       nextState: 'q6',
-      direction: 'a',
-      symbol: '-',
+      direction: '-',
+      symbol: 'a',
     },
     {
       nextState: 'SK',

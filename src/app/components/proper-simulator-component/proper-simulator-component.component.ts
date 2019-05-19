@@ -10,6 +10,7 @@ import { tapeValidator } from '../../helpers/tapeValidator';
 
 import * as fromPalindrom from '../../data/PalindromStates.js';
 import * as fromZU2 from '../../data/ZU2.js';
+import * as from102 from '../../data/102.js';
 
 import { oneStateValidator } from '../../helpers/tableOfStatesValidator';
 import { dontAllowEmptySymbol } from '../../helpers/dontAllowEmptySymbol';
@@ -36,8 +37,7 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
   private rightAddedSymbols: string[] = ['#', '#', '#'];
 
   private currentState;
-  private predefinedString =  'none';
-
+  private predefinedString = 'none';
 
 
 
@@ -62,17 +62,27 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
       this.turingMachinePropertiesForm.patchValue(fromPalindrom.properites);
       this.tableOfStatesForm.patchValue(fromPalindrom.tableOfStates);
       this.tapeForm.patchValue({
-        tape: ''
+        tape: 'abba'
       });
 
       return;
     }
 
     if (this.predefinedString === 'ZU2') {
-      this.turingMachinePropertiesForm.patchValue(fromZU2.properites);
+      this.turingMachinePropertiesForm.patchValue(fromZU2.properties);
       this.tableOfStatesForm.patchValue(fromZU2.tableOfStates);
       this.tapeForm.patchValue({
-        tape: ''
+        tape: '1.101,01100'
+      });
+
+      return;
+    }
+
+    if (this.predefinedString === '102') {
+      this.turingMachinePropertiesForm.patchValue(from102.properties);
+      this.tableOfStatesForm.patchValue(from102.tabelOfStates);
+      this.tapeForm.patchValue({
+        tape: '0121211'
       });
 
       return;
@@ -144,8 +154,9 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
       numberOfStates: 0
     }), filter(({ numberOfStates }) => numberOfStates < 1000))
       .subscribe((values) => {
-        this.tapeForm = this.generateTapeForm();
         this.generateTableOfStatesForm(values);
+
+        this.tapeForm = this.generateTapeForm();
         this.getTapeFormValueChanges();
       });
   }
@@ -160,9 +171,9 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
   getNumberOfStatesArrayObservable() {
     return this.numberOfStatesArray$ = this.turingMachinePropertiesForm.valueChanges.pipe(
       pluck('numberOfStates'),
-      startWith('2'),
+      startWith(2),
       filter(val => val < 1000),
-      map(length => range(0, length))
+      map(length => range(0, +length))
     );
   }
 
@@ -191,16 +202,13 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
 
   generateTapeForm(): FormGroup {
     return this.fb.group({
-      tape: ['', [Validators.required, tapeValidator('ad')]]
+      tape: ['', [Validators.required, tapeValidator(this.turingMachinePropertiesForm.value.allowedSymbols)]]
     });
   }
 
   goToNextState() {
     const { symbol, nextState, direction, row, column } = this.currentState;
     this.tableOfStatesForm.patchValue(clearCurrentState(this.tableOfStatesForm.value));
-
-    console.log(clearCurrentState(this.tableOfStatesForm.value));
-
 
     if (nextState.toUpperCase() === 'SK') {
       !this.isEnd && window.alert('KONIEC');
@@ -214,7 +222,13 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
 
 
     this.changeProperSymbol(this.tapeIndex, symbol);
-    direction.toUpperCase() === 'L' ? this.tapeIndex-- : this.tapeIndex++;
+
+    if (direction.toUpperCase() === 'L') {
+      this.tapeIndex--;
+    } else if (direction.toUpperCase() === 'P') {
+      this.tapeIndex++;
+    }
+
 
     const nextStateSymbol = this.selectProperSymbol(this.tapeIndex);
 
@@ -270,8 +284,6 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
 }
 
 function clearCurrentState(state: Record<string, any[]>) {
-  console.log(state);
-  console.log(Object.entries(state));
   return Object.entries(state).reduce((acc, [key, value]) => ({
     ...acc,
     [key]: value.map((formGroup) => ({
