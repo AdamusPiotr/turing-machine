@@ -17,7 +17,7 @@
   <table class="table" [formGroup]="tableOfStatesForm">
     <tr>
       <th>/</th>
-      <th *ngFor="let stateNumber of numberOfStatesArray$ | async;" class="table__header">q{{stateNumber}}</th>
+      <th *ngFor="let stateNumber of this.turingMachinePropertiesForm.value.numberOfStates | range;" class="table__header">q{{stateNumber}}</th>
     </tr>
     <tr *ngFor="let characterForm of tableOfStatesForm.controls | keyvalue" [formGroup]="characterForm.value">
       <th class="table__header">
@@ -43,42 +43,61 @@
   </div>
 </ng-template>
 
-<div class="row mt-1" [formGroup]="tapeForm">
-  <div>
-    <label for="tapeSymbols">Starting tape value</label>
-    <input id="tapeSymbols" class="form-control input--short" formControlName="tape"/>
-  </div>
-</div>
-
-<div class="row tape mt-2">
-  <div class="reversed-tape">
-    <div class="tape-cell" *ngFor="let leftSymbol of leftAddedSymbols">
-      {{leftSymbol}}
+<ng-container *ngIf="tableOfStatesForm.valid && turingMachinePropertiesForm.valid">
+  <div class="row mt-1" [formGroup]="tapeForm">
+    <div>
+      <label for="tapeSymbols">Starting tape value</label>
+      <input id="tapeSymbols" class="form-control input--short" formControlName="tape"/>
     </div>
   </div>
+</ng-container>
 
-  <div class="original-tape-container">
-    <div *ngFor="let symbol of tapeValue" class=" tape-cell">
-      {{symbol}}
+
+<ng-container *ngIf="tableOfStatesForm.valid && turingMachinePropertiesForm.valid && tapeForm.valid">
+
+  <div class="row tape mt-2">
+    <div class="reversed-tape">
+      <div class="tape-cell" *ngFor="let leftSymbol of leftAddedSymbols">
+        {{leftSymbol}}
+      </div>
     </div>
-    <div class="pointer" [ngStyle]="{transform: 'translate(' + (tapeIndex * 35) +'px)'}">
+
+    <div class="original-tape-container">
+      <div *ngFor="let symbol of tapeValue" class=" tape-cell">
+        {{symbol}}
+      </div>
+      <div class="pointer" [ngStyle]="{transform: 'translate(' + (tapeIndex * 35) +'px)'}">
+      </div>
     </div>
+
+
+    <div class="right-tape-container">
+      <div class="tape-cell" *ngFor="let rightSymbol of rightAddedSymbols">
+        {{rightSymbol}}
+      </div>
+    </div>
+
   </div>
+  <div class="row mt-3">
+    <button class="btn btn-info" (click)="goToNextState()"
+            [disabled]="isEnd || tableOfStatesForm.invalid || tapeForm.invalid || turingMachinePropertiesForm.invalid">
+      Next
+    </button>
 
-
-  <div class="right-tape-container">
-    <div class="tape-cell" *ngFor="let rightSymbol of rightAddedSymbols">
-      {{rightSymbol}}
-    </div>
+    <button class="btn btn-danger ml-5" (click)="resetForms()">
+      Reset
+    </button>
   </div>
+</ng-container>
 
-</div>
 
-<div class="row">
-  <button class="btn btn-info" (click)="goToNextState()"
-          [disabled]="isEnd || tableOfStatesForm.invalid || tapeForm.invalid || turingMachinePropertiesForm.invalid">
-    Next
-  </button>
+<div class="row mt-3">
+  <select name="predefinedMT" id="predefinedMT" [(ngModel)]="predefinedString">
+    <option value="none"> None</option>
+    <option value="palindrom">Palindrom</option>
+    <option value="ZU2">ZU2</option>
+  </select>
+  <button class="btn btn-dark ml-2" (click)="selectPredefined()">Select predefined</button>
 </div>
 
 

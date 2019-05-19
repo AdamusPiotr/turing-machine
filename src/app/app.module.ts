@@ -11,6 +11,7 @@ import { CurrentFormValuePipe } from './pipes/current-form-value.pipe';
 import { SplitPipe } from './pipes/split.pipe';
 import { ProperSimulatorComponentComponent } from './components/proper-simulator-component/proper-simulator-component.component';
 import { InputResizeDirective } from './input-resize.directive';
+import { RangePipe } from './pipes/range.pipe';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { InputResizeDirective } from './input-resize.directive';
     SplitPipe,
     ProperSimulatorComponentComponent,
     InputResizeDirective,
+    RangePipe,
   ],
   imports: [
     BrowserModule,

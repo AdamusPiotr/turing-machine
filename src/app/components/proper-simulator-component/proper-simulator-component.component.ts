@@ -2,11 +2,17 @@ import { Component, OnDestroy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
 import { range } from 'lodash';
-import { filter, map, startWith } from 'rxjs/operators';
+import { filter, map, pluck, startWith } from 'rxjs/operators';
 
 import { nextStateValidator } from '../../helpers/nextState.validator';
 import { stateSymbolValidator } from '../../helpers/stateSymbol.validator';
 import { tapeValidator } from '../../helpers/tapeValidator';
+
+import * as fromPalindrom from '../../data/PalindromStates.js';
+import * as fromZU2 from '../../data/ZU2.js';
+
+import { oneStateValidator } from '../../helpers/tableOfStatesValidator';
+import { dontAllowEmptySymbol } from '../../helpers/dontAllowEmptySymbol';
 
 @Component({
   selector: 'app-proper-simulator-component',
@@ -23,13 +29,15 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
   private turingMachinePropertiesFormValueChanges: Subscription;
   private isEnd = false;
 
-  tapeValue: string[];
-  tapeIndex = 0;
+  private tapeValue: string[];
+  private tapeIndex = 0;
 
-  leftAddedSymbols: string[] = ['#', '#', '#'];
-  rightAddedSymbols: string[] = ['#', '#', '#'];
+  private leftAddedSymbols: string[] = ['#', '#', '#'];
+  private rightAddedSymbols: string[] = ['#', '#', '#'];
 
-  currentState;
+  private currentState;
+  private predefinedString =  'none';
+
 
 
 
@@ -41,11 +49,7 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
     this.getTuringMachinePropertiesValueChangesSubscription();
     this.getTapeFormValueChanges();
     this.getTableOfStatesValueChanges();
-    this.tableOfStatesForm.patchValue({
-      '#': [{ direction: 'P', nextState: 'q1', symbol: 'a' }, { nextState: 'SK' }],
-      a: [{ direction: 'P', nextState: 'q0', symbol: 'd' }, { nextState: 'SK' }],
-      d: [{ direction: 'P', nextState: 'q0', symbol: 'a' }, { nextState: 'SK' }]
-    });
+
 
   }
 
@@ -53,9 +57,30 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
     this.turingMachinePropertiesFormValueChanges.unsubscribe();
   }
 
+  selectPredefined() {
+    if (this.predefinedString === 'palindrom') {
+      this.turingMachinePropertiesForm.patchValue(fromPalindrom.properites);
+      this.tableOfStatesForm.patchValue(fromPalindrom.tableOfStates);
+      this.tapeForm.patchValue({
+        tape: ''
+      });
+
+      return;
+    }
+
+    if (this.predefinedString === 'ZU2') {
+      this.turingMachinePropertiesForm.patchValue(fromZU2.properites);
+      this.tableOfStatesForm.patchValue(fromZU2.tableOfStates);
+      this.tapeForm.patchValue({
+        tape: ''
+      });
+
+      return;
+    }
+  }
+
   getTableOfStatesValueChanges() {
     this.tableOfStatesForm.valueChanges.subscribe((val) => {
-
       if (!this.currentState || this.tableOfStatesForm.invalid) {
         return;
       }
@@ -107,13 +132,21 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
     });
   }
 
+  resetForms() {
+    this.tapeForm.reset();
+    this.tableOfStatesForm.reset();
+    this.turingMachinePropertiesForm.reset();
+  }
+
   getTuringMachinePropertiesValueChangesSubscription(): Subscription {
     return this.turingMachinePropertiesFormValueChanges = this.turingMachinePropertiesForm.valueChanges.pipe(startWith({
-      allowedSymbols: 'ad',
-      numberOfStates: 2
+      allowedSymbols: '',
+      numberOfStates: 0
     }), filter(({ numberOfStates }) => numberOfStates < 1000))
       .subscribe((values) => {
+        this.tapeForm = this.generateTapeForm();
         this.generateTableOfStatesForm(values);
+        this.getTapeFormValueChanges();
       });
   }
 
@@ -125,7 +158,8 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
   }
 
   getNumberOfStatesArrayObservable() {
-    return this.numberOfStatesArray$ = this.turingMachinePropertiesForm.get('numberOfStates').valueChanges.pipe(
+    return this.numberOfStatesArray$ = this.turingMachinePropertiesForm.valueChanges.pipe(
+      pluck('numberOfStates'),
       startWith('2'),
       filter(val => val < 1000),
       map(length => range(0, length))
@@ -134,8 +168,8 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
 
   generateTuringMachinePropertiesForm() {
     return this.fb.group({
-      allowedSymbols: ['ad', [Validators.required, Validators.minLength(2)]],
-      numberOfStates: [2, [Validators.required, Validators.min(2)]]
+      allowedSymbols: ['', [Validators.required, Validators.minLength(2), dontAllowEmptySymbol()]],
+      numberOfStates: [0, [Validators.required, Validators.min(2)]]
     });
   }
 
@@ -143,9 +177,9 @@ export class ProperSimulatorComponentComponent implements OnDestroy {
     const generateStateSubFormsArray = () => range(numberOfStates).map(() => this.fb.group({
       nextState: ['SK', [nextStateValidator(numberOfStates)]],
       symbol: ['', [stateSymbolValidator(allowedSymbols + '#')]],
-      direction: ['', Validators.pattern('[LP]{1}')],
+      direction: ['', Validators.pattern('[LP-]{1}')],
       current: false
-    }));
+    }, { validators: oneStateValidator }));
 
     const tableOfStatesForm: Record<string, FormArray> = ('#' + allowedSymbols).split('').reduce((acc, next) => ({
       ...acc,
